@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { auth, db } from "../config/firebase";
 import {
   collection,
   addDoc,
@@ -11,11 +12,9 @@ import {
   getDocs,
   where,
   setDoc,
-  Timestamp,  // Importar Timestamp para timestamp inmediato
+  Timestamp,    
 } from "firebase/firestore";
-import { auth, db } from "../config/firebase";
 
-/* 🕒 FORMATO DE HORA */
 const formatTime = (timestamp) => {
   if (!timestamp) return "";
   return timestamp.toDate().toLocaleTimeString("es-MX", {
@@ -27,61 +26,57 @@ const formatTime = (timestamp) => {
 export default function Chat({ selectedUser }) {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
-  const bottomRef = useRef(null);
-
+  const messagesRef = useRef(null);
+  const [isAtBottom, setIsAtBottom] = useState(true);
   const currentUser = auth.currentUser;
 
   const chatId =
-    currentUser.uid > selectedUser.uid  // <-- CORREGIDO: Usar selectedUser.uid (no 'user')
+    currentUser.uid > selectedUser.uid
       ? currentUser.uid + selectedUser.uid
       : selectedUser.uid + currentUser.uid;
 
-  /* 📩 ESCUCHAR MENSAJES */
   useEffect(() => {
     const q = query(
       collection(db, "chats", chatId, "messages"),
       orderBy("createdAt")
     );
-
     const unsub = onSnapshot(q, (snap) => {
-      setMessages(
-        snap.docs.map((d) => ({ id: d.id, ...d.data() }))
-      );
+      setMessages(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
-
     return () => unsub();
   }, [chatId]);
 
-  /* ⬇️ SCROLL AUTOMÁTICO */
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  const checkIfAtBottom = () => {
+    if (messagesRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = messagesRef.current;
+      setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 10);
+    }
+  };
 
-  /* ✅ MARCAR COMO LEÍDOS */
   useEffect(() => {
-    const markAsRead = async () => {
+    if (messagesRef.current && isAtBottom) {
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+    }
+  }, [messages, isAtBottom]);
+
+  useEffect(() => {
+    const markRead = async () => {
       const q = query(
         collection(db, "chats", chatId, "messages"),
         where("receiverId", "==", currentUser.uid),
         where("read", "==", false)
       );
-
       const snap = await getDocs(q);
-      snap.forEach((docu) => {
-        updateDoc(doc(db, "chats", chatId, "messages", docu.id), {
-          read: true,
-        });
-      });
+      snap.forEach((d) =>
+        updateDoc(doc(db, "chats", chatId, "messages", d.id), { read: true })
+      );
     };
-
-    markAsRead();
+    markRead();
   }, [chatId]);
 
-  /* ✉️ ENVIAR MENSAJE */
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!text.trim()) return;
-
     await addDoc(collection(db, "chats", chatId, "messages"), {
       text,
       senderId: currentUser.uid,
@@ -89,92 +84,65 @@ export default function Chat({ selectedUser }) {
       createdAt: serverTimestamp(),
       read: false,
     });
-
-    // Actualizar lastMessageAt con timestamp inmediato (sin delay)
-    await setDoc(doc(db, "chats", chatId), {
-      lastMessageAt: Timestamp.now(),  // Timestamp inmediato para ordenamiento sin "salto"
-    }, { merge: true });
-
+    await setDoc(doc(db, "chats", chatId), { lastMessageAt: Timestamp.now() },    {    merge: true });
     setText("");
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-100 dark:bg-gray-900">
-
-      {/* 🔝 HEADER */}
-      <div
-        className="flex items-center gap-3 px-4 py-3
-        bg-white dark:bg-gray-800
-        border-b dark:border-gray-700"
-      >
-        <img
-          src={selectedUser.photo}
-          alt="avatar"
-          className="w-10 h-10 rounded-full flex-shrink-0"
-        />
-
-        {/* 🔹 NOMBRE RECORTADO */}
-        <span
-          className="font-semibold text-gray-800 dark:text-white
-          truncate max-w-[180px]"
-          title={selectedUser.name}
-        >
-          {selectedUser.name}
-        </span>
+    <div className="flex flex-col h-full div-wht relative">
+      {/* HEADER */}
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-300 dark:border-zinc-800 div-wht">
+        <img src={selectedUser.photo} className="w-10 h-10 rounded-full" />
+        <span className="font-semibold text-primary truncate">{selectedUser.name}</span>
       </div>
 
-      {/* 💬 MENSAJES */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+      {/* MENSAJES */}
+      <div
+        ref={messagesRef}
+        onScroll={checkIfAtBottom}
+        className="flex-1 overflow-y-auto px-4 py-3 space-y-2 scrollbar-thin div-conv"
+      >
+        {messages.length === 0 && (
+          <div className="text-center text-muted py-6">No hay mensajes aún</div>
+        )}
         {messages.map((msg) => {
           const isMe = msg.senderId === currentUser.uid;
-
           return (
-            <div
-              key={msg.id}
-              className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-            >
-              <div
-                className={`max-w-[70%] px-4 py-2 rounded-2xl shadow
-                ${isMe
-                    ? "bg-green-400 text-black dark:bg-green-500"
-                    : "bg-white dark:bg-gray-700 text-black dark:text-white"
-                  }`}
-              >
+            <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+              <div className={isMe ? "div-msg-sender" : "div-msg"}>
                 <p className="text-sm break-words">{msg.text}</p>
-
-                <p className="text-[10px] text-right opacity-60 mt-1">
-                  {formatTime(msg.createdAt)}
-                </p>
+                <p className="text-[10px] text-muted text-right mt-1">{formatTime(msg.createdAt)}</p>
               </div>
             </div>
           );
         })}
-
-        <div ref={bottomRef} />
       </div>
 
-      {/* ✍️ INPUT */}
+      {/* BOTÓN SCROLL */}
+      {!isAtBottom && (
+        <button
+          onClick={() => {
+            if (messagesRef.current) messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+            setIsAtBottom(true);
+          }}
+          className="absolute bottom-20 right-4 z-10 w-10 h-10 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center shadow-lg transition"
+        >
+          ↓
+        </button>
+      )}
+
+      {/* INPUT */}
       <form
         onSubmit={sendMessage}
-        className="flex items-center gap-2 px-3 py-2
-        bg-gray-200 dark:bg-gray-800"
+        className="flex items-center gap-2 px-3 py-3 border-t border-zinc-300 dark:border-zinc-800 div-gry"
       >
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Mensaje..."
-          className="flex-1 px-4 py-2 rounded-full
-          bg-white dark:bg-gray-700
-          text-black dark:text-white
-          outline-none"
+          placeholder="Escribe un mensaje..."
+          className="flex-1 px-4 py-2 rounded-full bg-gray-200 text-gray-900 placeholder-gray-600 dark:bg-zinc-800 dark:text-white dark:placeholder-zinc-400 outline-none focus:ring-2 focus:ring-green-500"
         />
-
-        <button
-          type="submit"
-          className="w-11 h-11 rounded-full
-          bg-green-500 hover:bg-green-600
-          text-white flex items-center justify-center"
-        >
+        <button type="submit" className="w-11 h-11 rounded-full bg-green-500 hover:bg-green-600 text-white">
           ➤
         </button>
       </form>

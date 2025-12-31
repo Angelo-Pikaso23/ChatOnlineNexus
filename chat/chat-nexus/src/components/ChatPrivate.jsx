@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   collection,
   onSnapshot,
@@ -10,7 +10,6 @@ import {
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 
-/* 🕒 FORMATO DE HORA */
 const formatTime = (timestamp) => {
   if (!timestamp) return "";
   return timestamp.toDate().toLocaleTimeString("es-MX", {
@@ -23,46 +22,40 @@ export default function ChatPrivate({ currentUser, selectUser }) {
   const [users, setUsers] = useState([]);
   const [lastMessages, setLastMessages] = useState({});
   const [unread, setUnread] = useState({});
-  const [lastMessageAt, setLastMessageAt] = useState({});  // Nuevo estado para ordenamiento confiable
+  const [lastMessageAt, setLastMessageAt] = useState({});
   const [hovered, setHovered] = useState(null);
-
   const unsubscribers = useRef([]);
 
-  /* 👥 OBTENER USUARIOS */
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "users"), (snap) => {
       setUsers(
-        snap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+        snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
         }))
       );
     });
-
     return () => unsub();
   }, []);
 
-  /* 📩 ÚLTIMO MENSAJE + 🔴 NO LEÍDOS + 🕒 LAST MESSAGE AT */
   useEffect(() => {
-    // Limpiar listeners viejos
     unsubscribers.current.forEach((u) => u());
     unsubscribers.current = [];
 
     users.forEach((user) => {
-      if (user.uid === currentUser.uid) return;
+      if (!user.uid || user.uid === currentUser.uid) return;
 
       const chatId =
         currentUser.uid > user.uid
           ? currentUser.uid + user.uid
           : user.uid + currentUser.uid;
 
-      /* 🔹 ÚLTIMO MENSAJE (para texto y hora) */
+      // Último mensaje
       const lastMsgQuery = query(
         collection(db, "chats", chatId, "messages"),
         orderBy("createdAt", "desc"),
         limit(1)
       );
-
       const unsubLast = onSnapshot(lastMsgQuery, (snap) => {
         setLastMessages((prev) => ({
           ...prev,
@@ -70,26 +63,21 @@ export default function ChatPrivate({ currentUser, selectUser }) {
         }));
       });
 
-      /* 🔹 MENSAJES NO LEÍDOS */
+      // Mensajes no leídos
       const unreadQuery = query(
         collection(db, "chats", chatId, "messages"),
         where("receiverId", "==", currentUser.uid),
         where("read", "==", false)
       );
-
       const unsubUnread = onSnapshot(unreadQuery, (snap) => {
-        setUnread((prev) => ({
-          ...prev,
-          [user.uid]: snap.size,
-        }));
+        setUnread((prev) => ({ ...prev, [user.uid]: snap.size }));
       });
 
-      /* 🔹 LAST MESSAGE AT (para ordenamiento confiable) */
-      const chatDocRef = doc(db, "chats", chatId);
-      const unsubChat = onSnapshot(chatDocRef, (docSnap) => {
+      // Último mensaje timestamp
+      const unsubChat = onSnapshot(doc(db, "chats", chatId), (snap) => {
         setLastMessageAt((prev) => ({
           ...prev,
-          [user.uid]: docSnap.exists() ? docSnap.data().lastMessageAt : null,
+          [user.uid]: snap.exists() ? snap.data().lastMessageAt : null,
         }));
       });
 
@@ -102,174 +90,67 @@ export default function ChatPrivate({ currentUser, selectUser }) {
     };
   }, [users, currentUser.uid]);
 
+  const orderedUsers = [...users]
+    .filter((u) => u.uid !== currentUser.uid)
+    .filter((u, i, arr) => arr.findIndex(x => x.uid === u.uid) === i)
+    .sort((a, b) => {
+      const tA = lastMessageAt[a.uid]?.seconds || 0;
+      const tB = lastMessageAt[b.uid]?.seconds || 0;
+      return tB - tA;
+    });
+
   return (
-    <div style={styles.sidebar}>
-      {/* 🔝 HEADER */}
-      <div style={styles.header}>Usuarios</div>
+    <div className="w-[320px] h-full flex flex-col div-wht border-r border-zinc-300 dark:border-zinc-800">
 
-      {/* 👥 LISTA */}
-      <div style={styles.userList}>
-        {users
-          .filter((u) => u.uid !== currentUser.uid)
-          .sort((a, b) => {
-            const timeA = lastMessageAt[a.uid]?.seconds || 0;  // Usar lastMessageAt para ordenamiento
-            const timeB = lastMessageAt[b.uid]?.seconds || 0;
-            return timeB - timeA;
-          })
-          .map((user) => {
-            const lastMsg = lastMessages[user.uid];
-            const isHover = hovered === user.uid;
-
-            return (
-              <div
-                key={user.id}
-                onClick={() => selectUser(user)}
-                onMouseEnter={() => setHovered(user.uid)}
-                onMouseLeave={() => setHovered(null)}
-                style={{
-                  ...styles.user,
-                  ...(isHover ? styles.userHover : {}),
-                }}
-              >
-                <img src={user.photo} alt="avatar" style={styles.avatar} />
-
-                <div style={{ flex: 1 }}>
-                  <div style={styles.name}>{user.name}</div>
-                  <div style={styles.lastMessage}>
-                    {lastMsg?.text || "Sin mensajes"}
-                  </div>
-                </div>
-
-                <div style={styles.right}>
-                  <div style={styles.time}>
-                    {lastMsg?.createdAt &&
-                      formatTime(lastMsg.createdAt)}
-                  </div>
-
-                  {unread[user.uid] > 0 && (
-                    <span style={styles.badge}>
-                      {unread[user.uid]}
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+      {/* HEADER */}
+      <div className="px-4 py-3 border-b border-zinc-300 dark:border-zinc-800 div-wht">
+        <h2 className="text-primary font-semibold text-lg">Chats</h2>
       </div>
 
-      {/* 🔻 FOOTER */}
-      <div style={styles.footer}>
-        <div style={styles.option}>⚙️ Ajustes</div>
-        <div style={styles.option}>👤 Perfil</div>
-        <div style={{ ...styles.option, color: "#ff5c5c" }}>
-          🗑️ Cerrar sesión
-        </div>
+
+      {/* LISTA DE USUARIOS */}
+      <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1 scrollbar-thin div-wht">
+        {orderedUsers.map((user, index) => {
+          const lastMsg = lastMessages[user.uid];
+          return (
+            <div
+              key={`${user.uid}-${index}`}
+              onClick={() => selectUser(user)}
+              onMouseEnter={() => setHovered(user.uid)}
+              onMouseLeave={() => setHovered(null)}
+              className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition ${hovered === user.uid ? "hover-light" : ""
+                }`}
+            >
+              <img
+                src={user.photo}
+                className="w-11 h-11 rounded-full object-cover border border-zinc-400 dark:border-zinc-600"
+              />
+
+              <div className="flex-1 min-w-0">
+                <p className="text-primary font-semibold truncate">{user.name}</p>
+                <p className="text-muted truncate">{lastMsg?.text || "Sin mensajes"}</p>
+              </div>
+
+              <div className="flex flex-col items-end gap-1">
+                <span className="text-muted">{lastMsg?.createdAt && formatTime(lastMsg.createdAt)}</span>
+                {unread[user.uid] > 0 && (
+                  <span className="bg-green-500 text-white text-xs min-w-[18px] h-[18px] flex items-center justify-center rounded-full font-medium">
+                    {unread[user.uid]}
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* FOOTER */}
+      <div className="border-t border-zinc-300 dark:border-zinc-800 p-3 space-y-2 div-wht">
+        <button className="w-full text-left px-3 py-2 rounded-lg hover-light">⚙️ Ajustes</button>
+        <button className="w-full text-left px-3 py-2 rounded-lg hover-light">👤 Perfil</button>
+        <button className="w-full text-left px-3 py-2 rounded-lg text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20">🚪 Cerrar sesión</button>
       </div>
     </div>
   );
 }
 
-/* 🎨 ESTILOS */
-const styles = {
-  sidebar: {
-    width: 320,
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-    backgroundImage:
-      "linear-gradient(139deg, #242832 0%, #251c28 100%)",
-    borderRight: "1px solid #2f3340",
-  },
-
-  header: {
-    padding: 12,
-    fontWeight: "bold",
-    color: "#fff",
-    borderBottom: "1px solid #42434a",
-  },
-
-  userList: {
-    flex: 1,
-    overflowY: "auto",
-    padding: 10,
-  },
-
-  user: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    padding: 8,
-    cursor: "pointer",
-    borderRadius: 8,
-    marginBottom: 6,
-    background: "#242832",
-    color: "#7e8590",
-    transition: "all 0.25s ease",
-  },
-
-  userHover: {
-    background: "#5353ff",
-    color: "#fff",
-  },
-
-  avatar: {
-    width: 42,
-    height: 42,
-    borderRadius: "50%",
-  },
-
-  name: {
-    fontWeight: 600,
-    fontSize: 14,
-  },
-
-  lastMessage: {
-    fontSize: 12,
-    opacity: 0.8,
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    maxWidth: 160,
-  },
-
-  right: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-end",
-    gap: 4,
-  },
-
-  time: {
-    fontSize: 11,
-    opacity: 0.7,
-  },
-
-  badge: {
-    background: "#25d366",
-    color: "#fff",
-    borderRadius: "50%",
-    minWidth: 20,
-    height: 20,
-    fontSize: 12,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  footer: {
-    padding: 10,
-    borderTop: "1px solid #42434a",
-    background: "#1e222b",
-    position: "sticky",
-    bottom: 0,
-  },
-
-  option: {
-    padding: 8,
-    borderRadius: 6,
-    cursor: "pointer",
-    fontWeight: 600,
-    color: "#7e8590",
-    transition: "all 0.3s",
-  },
-};

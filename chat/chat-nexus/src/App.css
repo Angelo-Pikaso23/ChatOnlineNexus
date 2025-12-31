@@ -1,48 +1,142 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* .app-bg {
-  height: 100vh;
-  background: linear-gradient(135deg, #e3f2fd, #f1f8e9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-} */
-
-/* Contenedor principal */
-/* .app-card {
-  width: 95%;
-  height: 90%;
-  background: #fff;
-  border-radius: 20px;
-  display: flex;
-  position: relative;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-  overflow: hidden;
-} */
-
-/* Área del chat */
-/* .chat-area {
-  flex: 1;
-  display: flex;
-} */
-
-/* Mensaje vacío */
-/* .empty-chat {
-  margin: auto;
-  font-size: 18px;
-  color: #777;
-} */
-
-/* Botón salir */
-/* .logout-btn {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background: #ef5350;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 6px 14px;
-  cursor: pointer;
+/* ==============================
+   VARIABLES DE TEMA
+============================== */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --text-primary: #111827;
+  --text-muted: #6b7280;
+  --hover-light: #f0f0f0;
+  --msg-sender-bg: #10b981; 
+  --msg-receiver-bg: #e5e7eb;
+  --bg-conversation:#4bb28c40;
 }
- */
+
+.dark {
+  --bg-primary: #18181b;
+  --bg-secondary: #09090b;
+  --text-primary: #ffffff;
+  --text-muted: #a1a1aa;
+  --hover-light: #292e38;
+  --msg-sender-bg: #22c55e;
+  --msg-receiver-bg: #3f3f46;
+  --bg-conversation: #18181b;;
+}
+
+/* ==============================
+   CONTENEDORES GENERALES
+============================== */
+.div-wht {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+.div-conv {
+  background-color: var(--bg-conversation);
+  color: var(--text-primary);
+}
+.div-gry {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: 12px;
+  padding: 0.5rem;
+}
+
+/* ==============================
+   MENSAJES
+============================== */
+.div-msg {
+  background-color: var(--msg-receiver-bg);
+  color: var(--text-primary);
+  border-radius: 1rem 1rem 1rem 0;
+  padding: 0.5rem 0.75rem;
+  max-width: 70%;
+  word-break: break-word;
+}
+
+.div-msg-sender {
+  background-color: var(--msg-sender-bg);
+  color: white;
+  border-radius: 1rem 1rem 0 1rem;
+  padding: 0.5rem 0.75rem;
+  max-width: 70%;
+  word-break: break-word;
+}
+
+
+/* ==============================
+   TEXTOS
+============================== */
+.text-primary {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.text-muted {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+/* ==============================
+   BOTONES Y HOVER
+============================== */
+.btn-light {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: 8px;
+  padding: 0.3rem 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.btn-light:hover {
+  background-color: var(--hover-light);
+}
+
+.btn-danger {
+  background-color: #ef4444;
+  color: white;
+  border-radius: 8px;
+  padding: 0.3rem 0.75rem;
+}
+
+.btn-danger:hover {
+  background-color: #dc2626;
+}
+
+.hover-light:hover {
+  background-color: var(--hover-light);
+}
+
+/* ==============================
+   SCROLLBAR
+============================== */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background-color: var(--bg-secondary);
+  border-radius: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: var(--text-muted);
+  border-radius: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-primary);
+}
+
+/* ==============================
+   HEADER Y FOOTER
+============================== */
+header {
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--hover-light);
+}
+
+footer {
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--hover-light);
+}

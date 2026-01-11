@@ -7,13 +7,20 @@
 ============================== */
 :root {
   --bg-primary: #ffffff;
-  --bg-secondary: #f9fafb;
+  --bg-secondary: hsl(150, 100%, 94.9%);
   --text-primary: #111827;
   --text-muted: #6b7280;
-  --hover-light: #f0f0f0;
-  --msg-sender-bg: #10b981; 
-  --msg-receiver-bg: #e5e7eb;
-  --bg-conversation:#4bb28c40;
+  --hover-light: hsl(152.2, 100%, 83.92%);
+  --msg-sender-bg: hsl(162.12,100%,50%); 
+  --msg-receiver-bg: hsl(153.39,100%,77.45%);
+  --bg-conversation: hsl(150.57,100%,89.61%);
+
+  --green-dark: hsl(162.12, 100%, 50%);
+  --green-medium: hsl(155.92, 100%, 69.22%);
+  --green-light: hsl(153.39, 100%, 77.45%);
+  --green-lighter: hsl(152.2, 100%, 83.92%);
+  --green-soft: hsl(150.57, 100%, 89.61%);
+  --green-pale: hsl(150, 100%, 94.9%);
 }
 
 .dark {
@@ -24,7 +31,7 @@
   --hover-light: #292e38;
   --msg-sender-bg: #22c55e;
   --msg-receiver-bg: #3f3f46;
-  --bg-conversation: #18181b;;
+  --bg-conversation: #18181b;
 }
 
 /* ==============================
@@ -34,10 +41,13 @@
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
+
 .div-conv {
   background-color: var(--bg-conversation);
   color: var(--text-primary);
+  padding: 0.5rem;
 }
+
 .div-gry {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
@@ -65,7 +75,6 @@
   max-width: 70%;
   word-break: break-word;
 }
-
 
 /* ==============================
    TEXTOS
@@ -134,9 +143,62 @@
 header {
   background-color: var(--bg-primary);
   border-bottom: 1px solid var(--hover-light);
+  padding: 0.75rem 1rem;
 }
 
 footer {
   background-color: var(--bg-secondary);
   border-top: 1px solid var(--hover-light);
+  padding: 0.75rem 1rem;
+}
+
+/* ==============================
+   INPUT DE MENSAJES
+============================== */
+.input-message {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  border: 1px solid var(--hover-light);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.input-message::placeholder {
+  color: var(--text-muted);
+}
+
+/* ==============================
+   BOTÓN VOLVER AL FONDO
+============================== */
+.btn-scroll-bottom {
+  position: absolute;
+  bottom: 5rem;
+  right: 1rem;
+  width: 40px;
+  height: 40px;
+  background-color: var(--green-dark);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  z-index: 10;
+  transition: background 0.2s;
+}
+
+.btn-scroll-bottom:hover {
+  background-color: var(--green-medium);
+}
+
+/* ==============================
+   AJUSTES ADICIONALES
+============================== */
+.div-msg p {
+  margin: 0;
+}
+
+.div-msg-sender p {
+  margin: 0;
 }

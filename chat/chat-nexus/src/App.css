@@ -2,25 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ==============================
-   VARIABLES DE TEMA
-============================== */
+/* ============================== VARIABLES DE TEMA ============================== */
+/* :root { --bg-primary: #ffffff; --bg-secondary: hsl(150, 100%, 94.9%); --text-primary: #111827; --text-muted: #6b7280; --hover-light: hsl(152.2, 100%, 83.92%); --msg-sender-bg: hsl(162.12,100%,50%); --msg-receiver-bg: hsl(153.39,100%,77.45%); --bg-conversation: hsl(150.57,100%,89.61%); --green-dark: hsl(162.12, 100%, 50%); --green-medium: hsl(155.92, 100%, 69.22%); --green-light: hsl(153.39, 100%, 77.45%); --green-lighter: hsl(152.2, 100%, 83.92%); --green-soft: hsl(150.57, 100%, 89.61%); --green-pale: hsl(150, 100%, 94.9%); rgb(0 0 0 / 89%) #0a0a18 } */
 :root {
-  --bg-primary: #ffffff;
-  --bg-secondary: hsl(150, 100%, 94.9%);
-  --text-primary: #111827;
-  --text-muted: #6b7280;
-  --hover-light: hsl(152.2, 100%, 83.92%);
-  --msg-sender-bg: hsl(162.12,100%,50%); 
-  --msg-receiver-bg: hsl(153.39,100%,77.45%);
-  --bg-conversation: hsl(150.57,100%,89.61%);
-
-  --green-dark: hsl(162.12, 100%, 50%);
-  --green-medium: hsl(155.92, 100%, 69.22%);
-  --green-light: hsl(153.39, 100%, 77.45%);
-  --green-lighter: hsl(152.2, 100%, 83.92%);
-  --green-soft: hsl(150.57, 100%, 89.61%);
-  --green-pale: hsl(150, 100%, 94.9%);
+  --bg-primary: #0f0f1a;
+  --bg-secondary: #1a1a2b;
+  --text-primary: #ffffff;
+  --text-muted: #a1a1aa;
+  --hover-light: #292e38;
+  --msg-sender-bg: #3c4fe0;
+  --msg-receiver-bg: #1f1f2e;
+  --bg-conversation: #0f0f1a;
+  --accent: #7f5af0;
+  --accent-light: #a78bfa;
 }
 
 .dark {
@@ -34,9 +28,23 @@
   --bg-conversation: #18181b;
 }
 
-/* ==============================
-   CONTENEDORES GENERALES
-============================== */
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+.section-label {
+  background-color: var(--bg-primary);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  /* display: inline-block; */
+  margin-bottom: 0.5rem;
+  border-color: var(--msg-sender-bg);
+}
+
+/* ============================== CONTENEDORES GENERALES ============================== */
 .div-wht {
   background-color: var(--bg-primary);
   color: var(--text-primary);
@@ -45,19 +53,17 @@
 .div-conv {
   background-color: var(--bg-conversation);
   color: var(--text-primary);
-  padding: 0.5rem;
+  padding: 1.25rem;
 }
 
 .div-gry {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   border-radius: 12px;
-  padding: 0.5rem;
+  padding: 0.9rem;
 }
 
-/* ==============================
-   MENSAJES
-============================== */
+/* ============================== MENSAJES ============================== */
 .div-msg {
   background-color: var(--msg-receiver-bg);
   color: var(--text-primary);
@@ -76,9 +82,30 @@
   word-break: break-word;
 }
 
-/* ==============================
-   TEXTOS
-============================== */
+/* ============================== BOTÓN BAJAR MENSAJES ============================== */
+.scroll-down-btn {
+  position: absolute;
+  right: 1rem;
+  bottom: 4.5rem;
+  /* arriba del input */
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--hover-light);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  z-index: 20;
+}
+
+.scroll-down-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* ============================== TEXTOS ============================== */
 .text-primary {
   color: var(--text-primary);
   font-weight: 600;
@@ -89,9 +116,7 @@
   font-size: 0.75rem;
 }
 
-/* ==============================
-   BOTONES Y HOVER
-============================== */
+/* ============================== BOTONES Y HOVER ============================== */
 .btn-light {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
@@ -119,31 +144,49 @@
   background-color: var(--hover-light);
 }
 
-/* ==============================
-   SCROLLBAR
-============================== */
+/* ============================== SCROLLBAR ============================== */
 .scrollbar-thin::-webkit-scrollbar {
   width: 8px;
 }
+
 .scrollbar-thin::-webkit-scrollbar-track {
   background-color: var(--bg-secondary);
   border-radius: 4px;
 }
+
 .scrollbar-thin::-webkit-scrollbar-thumb {
   background-color: var(--text-muted);
   border-radius: 4px;
 }
+
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background-color: var(--text-primary);
 }
 
-/* ==============================
-   HEADER Y FOOTER
-============================== */
+/* ============================== HEADER Y FOOTER ============================== */
 header {
-  background-color: var(--bg-primary);
-  border-bottom: 1px solid var(--hover-light);
-  padding: 0.75rem 1rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--hover-light);
+  padding: 0.75rem 1.25rem;
+  margin: 0.75rem;
+  border-radius: 1rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Título Chats */
+.header-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Iconos del header */
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
 }
 
 footer {
@@ -152,49 +195,55 @@ footer {
   padding: 0.75rem 1rem;
 }
 
-/* ==============================
-   INPUT DE MENSAJES
-============================== */
+/* ============================== INPUT DE MENSAJES ============================== */
 .input-message {
   width: 100%;
   padding: 0.5rem 1rem;
   border-radius: 9999px;
-  border: 1px solid var(--hover-light);
   background-color: var(--bg-secondary);
   color: var(--text-primary);
+  border: 1px solid var(--hover-light);
+  outline: none;
+  transition: border 0.2s ease;
+}
+
+.input-message:focus {
+  border-color: var(--accent);
 }
 
 .input-message::placeholder {
   color: var(--text-muted);
 }
 
-/* ==============================
-   BOTÓN VOLVER AL FONDO
-============================== */
+/* ============================== BOTÓN VOLVER AL FONDO ============================== */
 .btn-scroll-bottom {
-  position: absolute;
-  bottom: 5rem;
+  position: fixed; /* flotante sobre todo */
+  bottom: 6.5rem; /* arriba del input flotante */
   right: 1rem;
-  width: 40px;
-  height: 40px;
-  background-color: var(--green-dark);
+  width: 44px;
+  height: 44px;
+  background-color: var(--accent-light);
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  z-index: 10;
-  transition: background 0.2s;
+  box-shadow: 0 2px 6px rgba(7, 16, 44, 0.623);
+  z-index: 30;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
 }
 
 .btn-scroll-bottom:hover {
-  background-color: var(--green-medium);
+  background-color: var(--accent);
+  transform: translateY(-2px);
 }
 
-/* ==============================
-   AJUSTES ADICIONALES
-============================== */
+.btn-scroll-bottom svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+/* ============================== AJUSTES ADICIONALES ============================== */
 .div-msg p {
   margin: 0;
 }
@@ -202,3 +251,231 @@ footer {
 .div-msg-sender p {
   margin: 0;
 }
+
+.div-con-msg {
+  padding-bottom: 5rem;
+  background-color: var(--bg-secondary);
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.icon-button:hover {
+  color: var(--accent-light);
+}
+
+.menu-item {
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  transition: background 0.2s;
+}
+
+.menu-item:hover {
+  background-color: var(--hover-light);
+}
+
+.chat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.chat-item:hover {
+  background-color: var(--hover-light);
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+.chat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.chat-item:hover {
+  background-color: var(--hover-light);
+}
+
+.shadow-sm {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+/* ============================== MENÚ INFERIOR ============================== */
+.bottom-menu {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--hover-light);
+  border-radius: 9999px;
+  padding: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  z-index: 50;
+}
+
+/* Botones del menú */
+.bottom-menu-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bottom-menu-btn:hover {
+  background-color: var(--hover-light);
+  transform: translateY(-2px);
+}
+
+.bottom-menu-btn.active {
+  background-color: var(--accent);
+  color: white;
+}
+
+/* ============================== AJUSTES PARA RESPONSIVIDAD (MÓVILES) ============================== */
+@media (max-width: 767px) {
+  .chat-list-drawer {
+    max-height: 70vh;
+  }
+
+  .div-con-msg {
+    padding-bottom: 3rem;
+  }
+
+  .input-message {
+    font-size: 0.875rem;
+  }
+
+  .bottom-menu-btn {
+    width: 40px;
+    height: 40px;
+  }
+  .btn-scroll-bottom {
+    width: 40px;
+    height: 40px;
+    bottom: 5.5rem;
+  }
+
+  .btn-scroll-bottom svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+
+
+  .aside-menu,
+  .header {
+    font-size: small;
+    max-inline-size: min-content;
+    margin: auto;
+    max-width: 150px;
+  }
+  .div-con-msg, .div-conv {
+    margin-bottom: 80px; 
+  }
+
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+}
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+/* ============================== MENÚ INFERIOR ESTILO UIVERSE ============================== */
+.button-container {
+  background-color: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  border-radius: 12px;
+ /*  box-shadow: 0 4px 12px var(--hover-light); */
+}
+
+.button-cht-m {
+  outline: 0 !important;
+  border: 0 !important;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  transition: all ease-in-out 0.3s;
+  cursor: pointer;
+}
+
+.button-cht-m:hover {
+  transform: translateY(-1px);
+  background-color: var(--bg-secondary);
+}
+
+.button-cht-m svg {
+  font-size: 54px;
+}
+

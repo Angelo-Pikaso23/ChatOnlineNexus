@@ -3,16 +3,18 @@
 @tailwind utilities;
 
 /* ============================== VARIABLES DE TEMA ============================== */
-/* :root { --bg-primary: #ffffff; --bg-secondary: hsl(150, 100%, 94.9%); --text-primary: #111827; --text-muted: #6b7280; --hover-light: hsl(152.2, 100%, 83.92%); --msg-sender-bg: hsl(162.12,100%,50%); --msg-receiver-bg: hsl(153.39,100%,77.45%); --bg-conversation: hsl(150.57,100%,89.61%); --green-dark: hsl(162.12, 100%, 50%); --green-medium: hsl(155.92, 100%, 69.22%); --green-light: hsl(153.39, 100%, 77.45%); --green-lighter: hsl(152.2, 100%, 83.92%); --green-soft: hsl(150.57, 100%, 89.61%); --green-pale: hsl(150, 100%, 94.9%); rgb(0 0 0 / 89%) #0a0a18 } */
 :root {
   --bg-primary: #0f0f1a;
   --bg-secondary: #1a1a2b;
   --text-primary: #ffffff;
   --text-muted: #a1a1aa;
   --hover-light: #292e38;
-  --msg-sender-bg: #3c4fe0;
+  --text-time: #7f5af0;
+
+  --msg-sender-bg: #221a3a;
   --msg-receiver-bg: #1f1f2e;
   --bg-conversation: #0f0f1a;
+
   --accent: #7f5af0;
   --accent-light: #a78bfa;
 }
@@ -23,37 +25,21 @@
   --text-primary: #ffffff;
   --text-muted: #a1a1aa;
   --hover-light: #292e38;
+  --text-time: #ffffff;
+
   --msg-sender-bg: #22c55e;
   --msg-receiver-bg: #3f3f46;
   --bg-conversation: #18181b;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-}
-
-.section-label {
-  background-color: var(--bg-primary);
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-weight: 600;
-  font-size: 0.875rem;
-  /* display: inline-block; */
-  margin-bottom: 0.5rem;
-  border-color: var(--msg-sender-bg);
+  font-family: "Inter", sans-serif;
 }
 
 /* ============================== CONTENEDORES GENERALES ============================== */
 .div-wht {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-}
-
-.div-conv {
-  background-color: var(--bg-conversation);
-  color: var(--text-primary);
-  padding: 1.25rem;
 }
 
 .div-gry {
@@ -63,45 +49,176 @@ body {
   padding: 0.9rem;
 }
 
+.div-conv {
+  background-color: var(--bg-conversation);
+  color: var(--text-primary);
+  padding: 1.25rem;
+
+  overflow-x: hidden;
+}
+
+.div-con-msg {
+  padding-bottom: 5rem;
+  background-color: var(--bg-secondary);
+}
+
 /* ============================== MENSAJES ============================== */
+.message-container {
+  display: flex;
+  width: 100%;
+}
+
+.align-start {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.align-end {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
 .div-msg {
+  position: relative;
   background-color: var(--msg-receiver-bg);
   color: var(--text-primary);
   border-radius: 1rem 1rem 1rem 0;
-  padding: 0.5rem 0.75rem;
+  padding: 0.75rem 1rem;
   max-width: 70%;
   word-break: break-word;
 }
 
 .div-msg-sender {
+  position: relative;
   background-color: var(--msg-sender-bg);
   color: white;
   border-radius: 1rem 1rem 0 1rem;
-  padding: 0.5rem 0.75rem;
+  padding: 0.75rem 1rem;
   max-width: 70%;
   word-break: break-word;
 }
+.div-msg,
+.div-msg-sender {
+  padding-top: 1.05rem; /* espacio para botones */
+}
 
-/* ============================== BOTÓN BAJAR MENSAJES ============================== */
-.scroll-down-btn {
+
+/* ============================== ACCIONES MENSAJE ============================== */
+.msg-actions {
   position: absolute;
-  right: 1rem;
-  bottom: 4.5rem;
-  /* arriba del input */
-  width: 44px;
-  height: 44px;
+  top: 0.3rem;
+  right: 0.6rem;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Mostrar al hover */
+.div-msg:hover .msg-actions,
+.div-msg-sender:hover .msg-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.msg-actions button {
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--hover-light);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 0.75rem;
+  cursor: pointer;
+  color: var(--text-muted);
+
+  transition: all 0.2s ease;
+}
+
+.msg-actions button:hover {
+  background-color: var(--hover-light);
+  color: var(--accent-light);
+  transform: scale(1.05);
+}
+
+
+/* ============================== FECHAS ============================== */
+.date-separator {
+  background: linear-gradient(135deg, var(--accent-light), var(--accent));
+  color: white;
+  font-size: 0.75rem;
+  text-align: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  margin: 0.75rem auto;
+  width: fit-content;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+/* ============================== MENSAJE BLOQUEADO ============================== */
+.blocked-msg {
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 0.5rem 0.75rem;
+  font-style: italic;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* ============================== INPUT MENSAJES ============================== */
+.input-message {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   border: 1px solid var(--hover-light);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
-  cursor: pointer;
-  font-size: 1.2rem;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-  z-index: 20;
+  outline: none;
+  transition: border 0.2s ease;
 }
 
-.scroll-down-btn:hover {
+.input-message:focus {
+  border-color: var(--accent);
+}
+
+.input-message::placeholder {
+  color: var(--text-muted);
+}
+
+/* ============================== BOTÓN SCROLL ============================== */
+.btn-scroll-bottom {
+  position: fixed;
+  right: 1rem;
+  bottom: 6.5rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--accent-light);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  transition: transform 0.2s ease;
+  z-index: 30;
+}
+
+.btn-scroll-bottom:hover {
+  background-color: var(--accent);
   transform: translateY(-2px);
 }
 
@@ -115,8 +232,11 @@ body {
   color: var(--text-muted);
   font-size: 0.75rem;
 }
-
-/* ============================== BOTONES Y HOVER ============================== */
+.text-time {
+  color: var(--text-time);
+  font-size: 0.75rem;
+}
+/* ============================== BOTONES ============================== */
 .btn-light {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
@@ -163,100 +283,130 @@ body {
   background-color: var(--text-primary);
 }
 
-/* ============================== HEADER Y FOOTER ============================== */
+/* ============================== HEADER ============================== */
 header {
   background-color: var(--bg-secondary);
   border: 1px solid var(--hover-light);
   padding: 0.75rem 1.25rem;
   margin: 0.75rem;
   border-radius: 1rem;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-/* Título Chats */
 .header-title {
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
-/* Iconos del header */
 .header-actions {
   display: flex;
   gap: 0.5rem;
 }
+/* ============================== HEADER CHAT ============================== */
+.chat-header-wrapper {
+  position: sticky;
+  top: 0.75rem;
+  z-index: 20;
 
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+/* BOTONES LATERALES */
+.chat-header-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--hover-light);
+  color: var(--text-primary);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chat-header-btn:hover {
+  background-color: var(--hover-light);
+  transform: translateY(-1px);
+}
+
+/* CONTENEDOR CENTRAL */
+.chat-header-center {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+}
+
+/* AVATAR */
+.chat-header-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* NOMBRE */
+.chat-header-name {
+  font-weight: 600;
+  font-size: 1rem;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* MENÚ */
+.chat-header-menu {
+  position: relative;
+}
+
+/* DROPDOWN */
+.chat-header-dropdown {
+  position: absolute;
+  right: 0;
+  top: 110%;
+
+  min-width: 180px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--hover-light);
+  border-radius: 0.75rem;
+
+  padding: 0.25rem;
+  display: none;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Mostrar menú */
+.chat-header-menu:hover .chat-header-dropdown {
+  display: block;
+}
+
+/* ============================== FOOTER ============================== */
 footer {
   background-color: var(--bg-secondary);
   border-top: 1px solid var(--hover-light);
   padding: 0.75rem 1rem;
 }
 
-/* ============================== INPUT DE MENSAJES ============================== */
-.input-message {
-  width: 100%;
-  padding: 0.5rem 1rem;
-  border-radius: 9999px;
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--hover-light);
-  outline: none;
-  transition: border 0.2s ease;
-}
-
-.input-message:focus {
-  border-color: var(--accent);
-}
-
-.input-message::placeholder {
-  color: var(--text-muted);
-}
-
-/* ============================== BOTÓN VOLVER AL FONDO ============================== */
-.btn-scroll-bottom {
-  position: fixed; /* flotante sobre todo */
-  bottom: 6.5rem; /* arriba del input flotante */
-  right: 1rem;
-  width: 44px;
-  height: 44px;
-  background-color: var(--accent-light);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 6px rgba(7, 16, 44, 0.623);
-  z-index: 30;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
-}
-
-.btn-scroll-bottom:hover {
-  background-color: var(--accent);
-  transform: translateY(-2px);
-}
-
-.btn-scroll-bottom svg {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-/* ============================== AJUSTES ADICIONALES ============================== */
-.div-msg p {
-  margin: 0;
-}
-
-.div-msg-sender p {
-  margin: 0;
-}
-
-.div-con-msg {
-  padding-bottom: 5rem;
-  background-color: var(--bg-secondary);
-}
-
+/* ============================== ICONOS ============================== */
 .icon-button {
   background: none;
   border: none;
@@ -270,6 +420,7 @@ footer {
   color: var(--accent-light);
 }
 
+/* ============================== MENÚ ============================== */
 .menu-item {
   width: 100%;
   text-align: left;
@@ -282,52 +433,7 @@ footer {
   background-color: var(--hover-light);
 }
 
-.chat-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.chat-item:hover {
-  background-color: var(--hover-light);
-}
-
-/* Animaciones */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.15s ease-out;
-}
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.2s ease-out;
-}
-
+/* ============================== LISTA DE CHATS ============================== */
 .chat-item {
   display: flex;
   align-items: center;
@@ -343,7 +449,7 @@ footer {
 }
 
 .shadow-sm {
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
 }
 
 /* ============================== MENÚ INFERIOR ============================== */
@@ -358,11 +464,10 @@ footer {
   padding: 0.5rem;
   display: flex;
   gap: 0.5rem;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.35);
   z-index: 50;
 }
 
-/* Botones del menú */
 .bottom-menu-btn {
   width: 44px;
   height: 44px;
@@ -388,76 +493,17 @@ footer {
   color: white;
 }
 
-/* ============================== AJUSTES PARA RESPONSIVIDAD (MÓVILES) ============================== */
-@media (max-width: 767px) {
-  .chat-list-drawer {
-    max-height: 70vh;
-  }
-
-  .div-con-msg {
-    padding-bottom: 3rem;
-  }
-
-  .input-message {
-    font-size: 0.875rem;
-  }
-
-  .bottom-menu-btn {
-    width: 40px;
-    height: 40px;
-  }
-  .btn-scroll-bottom {
-    width: 40px;
-    height: 40px;
-    bottom: 5.5rem;
-  }
-
-  .btn-scroll-bottom svg {
-    width: 1rem;
-    height: 1rem;
-  }
-
-
-
-  .aside-menu,
-  .header {
-    font-size: small;
-    max-inline-size: min-content;
-    margin: auto;
-    max-width: 150px;
-  }
-  .div-con-msg, .div-conv {
-    margin-bottom: 80px; 
-  }
-
-
-  html,
-  body,
-  #root {
-    height: 100%;
-    overflow: hidden;
-  }
-
-}
-html,
-body,
-#root {
-  height: 100%;
-  overflow: hidden;
-}
-/* ============================== MENÚ INFERIOR ESTILO UIVERSE ============================== */
+/* ============================== UIVERSE BOTONES ============================== */
 .button-container {
   background-color: var(--bg-primary);
   display: flex;
   align-items: center;
   justify-content: space-around;
   border-radius: 12px;
- /*  box-shadow: 0 4px 12px var(--hover-light); */
 }
 
 .button-cht-m {
-  outline: 0 !important;
-  border: 0 !important;
+  border: none;
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -466,7 +512,7 @@ body,
   align-items: center;
   justify-content: center;
   color: var(--text-primary);
-  transition: all ease-in-out 0.3s;
+  transition: all 0.3s ease;
   cursor: pointer;
 }
 
@@ -475,7 +521,34 @@ body,
   background-color: var(--bg-secondary);
 }
 
-.button-cht-m svg {
-  font-size: 54px;
+/* ============================== RESPONSIVE ============================== */
+@media (max-width: 767px) {
+  .div-con-msg {
+    padding-bottom: 3rem;
+  }
+
+  .bottom-menu-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .btn-scroll-bottom {
+    width: 40px;
+    height: 40px;
+    bottom: 5.5rem;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
 }
 
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}

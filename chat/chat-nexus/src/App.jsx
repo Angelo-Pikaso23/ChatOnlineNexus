@@ -48,7 +48,8 @@ export default function App() {
       />
       <main className="flex-1 h-full div-wht">
         {selectedUser ? (
-          <Chat selectedUser={selectedUser} />
+          <Chat selectedUser={selectedUser}
+            onCloseChat={() => setSelectedUser(null)} />
         ) : (
           <div className="h-full flex items-center justify-center text-muted">
             👈 Selecciona un chat

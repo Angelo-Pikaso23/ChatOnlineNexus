@@ -1,254 +1,339 @@
 import { useEffect, useRef, useState } from "react";
 import { auth, db } from "../config/firebase";
 import {
-  collection,
-  addDoc,
-  query,
-  orderBy,
-  onSnapshot,
-  serverTimestamp,
-  updateDoc,
-  doc,
-  getDocs,
-  where,
-  setDoc,
-  Timestamp,
+	collection,
+	addDoc,
+	query,
+	orderBy,
+	onSnapshot,
+	serverTimestamp,
+	updateDoc,
+	deleteDoc,
+	doc,
+	getDocs,
+	where,
+	setDoc,
+	Timestamp,
 } from "firebase/firestore";
 
+/* ============================== FUNCIONES DE FECHA ============================== */
 const formatTime = (timestamp) => {
-  if (!timestamp) return "";
-  return timestamp.toDate().toLocaleTimeString("es-MX", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+	if (!timestamp || !timestamp.toDate) return "";
+	return timestamp.toDate().toLocaleTimeString("es-MX", {
+		hour: "2-digit",
+		minute: "2-digit",
+	});
 };
 
-export default function Chat({ selectedUser }) {
-  const currentUser = auth.currentUser;
+const formatDate = (timestamp) => {
+	if (!timestamp || !timestamp.toDate) return "";
+	const now = new Date();
+	const msgDate = timestamp.toDate();
+	const diffDays = Math.floor((now - msgDate) / (1000 * 60 * 60 * 24));
+	if (diffDays === 0) return "Hoy";
+	if (diffDays === 1) return "Ayer";
+	return `Hace ${diffDays} días`;
+};
 
-  /* ==============================
-     🛡️ PROTECCIÓN CRÍTICA
-  ============================== */
-  if (!currentUser || !selectedUser) {
-    return (
-      <div className="h-full flex items-center justify-center div-conv">
-        <p className="text-muted">Selecciona un chat para comenzar</p>
-      </div>
-    );
-  }
+/* ============================== COMPONENTE CHAT ============================== */
+export default function Chat({ selectedUser, onCloseChat }) {
+	const currentUser = auth.currentUser;
 
-  const [messages, setMessages] = useState([]);
-  const [text, setText] = useState("");
-  const [isAtBottom, setIsAtBottom] = useState(true);
-  const messagesRef = useRef(null);
+	if (!currentUser || !selectedUser) {
+		return (
+			<div className="h-full flex items-center justify-center div-conv">
+				<p className="text-muted">Selecciona un chat para comenzar</p>
+			</div>
+		);
+	}
 
-  /* ==============================
-     CHAT ID SEGURO
-  ============================== */
-  const chatId =
-    currentUser.uid > selectedUser.uid
-      ? currentUser.uid + selectedUser.uid
-      : selectedUser.uid + currentUser.uid;
+	const [messages, setMessages] = useState([]);
+	const [text, setText] = useState("");
+	const [isAtBottom, setIsAtBottom] = useState(true);
+	const [editingId, setEditingId] = useState(null);
+	const [editText, setEditText] = useState("");
+	const [blockedUsers, setBlockedUsers] = useState([]);
 
-  /* ==============================
-     MENSAJES
-  ============================== */
-  useEffect(() => {
-    const q = query(
-      collection(db, "chats", chatId, "messages"),
-      orderBy("createdAt")
-    );
+	const messagesRef = useRef(null);
 
-    const unsub = onSnapshot(q, (snap) => {
-      setMessages(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-    });
+	const chatId =
+		currentUser.uid > selectedUser.uid
+			? currentUser.uid + selectedUser.uid
+			: selectedUser.uid + currentUser.uid;
 
-    return () => unsub();
-  }, [chatId]);
+	/* ============================== MENSAJES ============================== */
+	useEffect(() => {
+		const q = query(
+			collection(db, "chats", chatId, "messages"),
+			orderBy("createdAt")
+		);
 
-  /* ==============================
-     SCROLL
-  ============================== */
-  const checkIfAtBottom = () => {
-    if (!messagesRef.current) return;
+		const unsub = onSnapshot(q, (snap) => {
+			setMessages(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+		});
 
-    const { scrollTop, scrollHeight, clientHeight } = messagesRef.current;
-    setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 10);
-  };
+		return () => unsub();
+	}, [chatId]);
 
-  useEffect(() => {
-    if (messagesRef.current && isAtBottom) {
-      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
-    }
-  }, [messages, isAtBottom]);
+	/* ============================== SCROLL ============================== */
+	const checkIfAtBottom = () => {
+		if (!messagesRef.current) return;
+		const { scrollTop, scrollHeight, clientHeight } = messagesRef.current;
+		setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 10);
+	};
 
-  /* ==============================
-     MARCAR COMO LEÍDOS
-  ============================== */
-  useEffect(() => {
-    const markRead = async () => {
-      const q = query(
-        collection(db, "chats", chatId, "messages"),
-        where("receiverId", "==", currentUser.uid),
-        where("read", "==", false)
-      );
+	useEffect(() => {
+		if (messagesRef.current && isAtBottom) {
+			messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+		}
+	}, [messages, isAtBottom]);
 
-      const snap = await getDocs(q);
-      snap.forEach((d) =>
-        updateDoc(doc(db, "chats", chatId, "messages", d.id), {
-          read: true,
-        })
-      );
-    };
+	/* ============================== MARCAR COMO LEÍDOS ============================== */
+	useEffect(() => {
+		const markRead = async () => {
+			const q = query(
+				collection(db, "chats", chatId, "messages"),
+				where("receiverId", "==", currentUser.uid),
+				where("read", "==", false)
+			);
 
-    markRead();
-  }, [chatId, currentUser.uid]);
+			const snap = await getDocs(q);
+			snap.forEach((d) =>
+				updateDoc(doc(db, "chats", chatId, "messages", d.id), {
+					read: true,
+				})
+			);
+		};
 
-  /* ==============================
-     ENVIAR MENSAJE
-  ============================== */
-  const sendMessage = async (e) => {
-    e.preventDefault();
-    if (!text.trim()) return;
+		markRead();
+	}, [chatId, currentUser.uid]);
 
-    await addDoc(collection(db, "chats", chatId, "messages"), {
-      text,
-      senderId: currentUser.uid,
-      receiverId: selectedUser.uid,
-      createdAt: serverTimestamp(),
-      read: false,
-    });
+	/* ============================== ENVIAR MENSAJE ============================== */
+	const sendMessage = async (e) => {
+		e.preventDefault();
+		if (!text.trim()) return;
 
-    await setDoc(
-      doc(db, "chats", chatId),
-      { lastMessageAt: Timestamp.now() },
-      { merge: true }
-    );
+		await addDoc(collection(db, "chats", chatId, "messages"), {
+			text,
+			senderId: currentUser.uid,
+			receiverId: selectedUser.uid,
+			createdAt: serverTimestamp(),
+			read: false,
+		});
 
-    setText("");
-  };
+		await setDoc(
+			doc(db, "chats", chatId),
+			{ lastMessageAt: Timestamp.now() },
+			{ merge: true }
+		);
 
-  return (
-    <div className="div-con-msg h-full relative flex flex-col items-center">
+		setText("");
+	};
 
-      {/* HEADER FLOTANTE */}
-      <div className="
-        div-wht shadow-sm
-        rounded-full
-        px-6 py-3
-        flex items-center gap-3
-        mt-4
-        z-10
-      ">
-        <img
-          src={selectedUser.photo}
-          className="w-10 h-10 rounded-full"
-        />
-        <span className="font-semibold text-lg truncate max-w-[200px]">
-          {selectedUser.name}
-        </span>
-      </div>
+	/* ============================== EDITAR / ELIMINAR ============================== */
+	const deleteMessage = async (id) => {
+		await deleteDoc(doc(db, "chats", chatId, "messages", id));
+	};
 
-      {/* CONVERSACIÓN */}
-      <div
-        ref={messagesRef}
-        onScroll={checkIfAtBottom}
-        className="
-          flex-1 w-full max-w-4xl
-          div-conv shadow-sm
-          rounded-3xl
-          
-          mt-[40px] mb-[90px]
-          px-6 py-4
-          overflow-y-auto
-          scrollbar-thin
-          space-y-4
-        "
-      >
-        {messages.length === 0 && (
-          <div className="text-center text-muted py-10">
-            No hay mensajes aún
-          </div>
-        )}
+	const editMessage = (msg) => {
+		setEditingId(msg.id);
+		setEditText(msg.text);
+	};
 
-        {messages.map((msg) => {
-          const isMe = msg.senderId === currentUser.uid;
-          return (
-            <div
-              key={msg.id}
-              className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-            >
-              <div className={isMe ? "div-msg-sender" : "div-msg"}>
-                <p className="text-sm">{msg.text}</p>
-                <p className="text-[10px] text-muted text-right mt-1">
-                  {formatTime(msg.createdAt)}
-                </p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+	const saveEdit = async (id) => {
+		if (!editText.trim()) return;
+		await updateDoc(doc(db, "chats", chatId, "messages", id), {
+			text: editText,
+		});
+		setEditingId(null);
+		setEditText("");
+	};
 
-      {/* INPUT FLOTANTE */}
-      <form
-        onSubmit={sendMessage}
-        className="
-    absolute bottom-4 left-1/2 -translate-x-1/2
-    w-full max-w-4xl
-    div-wht shadow-sm
-    rounded-full
-    px-4 py-3
-    flex items-center gap-3
-  "
-      >
+	/* ============================== BLOQUEAR USUARIO ============================== */
+	const blockUser = (id) => {
+		if (!blockedUsers.includes(id)) {
+			setBlockedUsers((prev) => [...prev, id]);
+		}
+	};
 
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Escribe un mensaje..."
-          className="input-message"
-        />
+	/* ============================== RENDER ============================== */
+	let prevDate = null;
 
-        <button
-          type="submit"
-          className="
-            bg-[var(--accent)]
-            text-white
-            w-10 h-10
-            rounded-full
-            flex items-center justify-center
-          "
-        >
-          ➤
-        </button>
-      </form>
+	return (
+		<div className="div-con-msg h-full relative flex flex-col items-center">
+			{/* HEADER FLOTANTE */}
+			<div className="chat-header-wrapper">
 
-      {/* BOTÓN BAJAR */}
-      {!isAtBottom && (
-  <button
-    onClick={() => {
-      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
-      setIsAtBottom(true);
-    }}
-    className="btn-scroll-bottom"
-    title="Ir al final"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={2}
-      stroke="currentColor"
-      className="w-6 h-6"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M19 9l-7 7-7-7"
-      />
-    </svg>
-  </button>
-)}
-    </div>
-  );
+				{/* BOTÓN SALIR */}
+				<button
+					className="chat-header-btn"
+					onClick={onCloseChat}
+					title="Salir del chat"
+				>
+					{/* SVG FLECHA */}
+					<svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+					>
+						<path d="M15 18l-6-6 6-6" />
+					</svg>
+				</button>
+
+				{/* CONTENEDOR CENTRAL */}
+				<div className="chat-header-center div-wht shadow-sm">
+					<img
+						src={selectedUser.photo}
+						alt="user"
+						className="chat-header-avatar"
+					/>
+					<span className="chat-header-name">
+						{selectedUser.name}
+					</span>
+				</div>
+
+				{/* MENÚ */}
+				<div className="chat-header-menu">
+					<button className="chat-header-btn">
+						{/* SVG MENÚ */}
+						<svg
+							width="20"
+							height="20"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2"
+							strokeLinecap="round"
+						>
+							<circle cx="12" cy="5" r="1" />
+							<circle cx="12" cy="12" r="1" />
+							<circle cx="12" cy="19" r="1" />
+						</svg>
+					</button>
+
+					<div className="chat-header-dropdown">
+						<button className="menu-item">Ver perfil</button>
+						<button className="menu-item">Silenciar</button>
+						<button
+							className="menu-item"
+							onClick={() => blockUser(selectedUser.uid)}
+						>
+							🚫 Bloquear
+						</button>
+					</div>
+				</div>
+
+			</div>
+
+			{/* CONVERSACIÓN */}
+			<div
+				ref={messagesRef}
+				onScroll={checkIfAtBottom}
+				className="flex-1 w-full max-w-4xl div-conv shadow-sm rounded-3xl mt-[40px] mb-[90px] px-6 py-4 overflow-y-auto scrollbar-thin space-y-4"
+			>
+				{messages.length === 0 && (
+					<div className="text-center text-muted py-10">
+						No hay mensajes aún
+					</div>
+				)}
+
+				{messages.map((msg) => {
+					if (!msg.createdAt) return null;
+
+					if (blockedUsers.includes(msg.senderId)) {
+						return (
+							<div key={msg.id} className="blocked-msg">
+								Usuario bloqueado
+							</div>
+						);
+					}
+
+					const isMe = msg.senderId === currentUser.uid;
+					const msgDateString = msg.createdAt.toDate().toDateString();
+					const showDate = prevDate !== msgDateString;
+					prevDate = msgDateString;
+
+					return (
+						<div
+							key={msg.id}
+							className={`flex ${isMe ? "justify-end" : "justify-start"} flex-col`}
+						>
+							{showDate && (
+								<div className="date-separator">
+									{formatDate(msg.createdAt)}
+								</div>
+							)}
+
+							<div className={isMe ? "align-end" : "align-start"}>
+								<div className={isMe ? "div-msg-sender" : "div-msg"}>
+									{editingId === msg.id ? (
+										<input
+											value={editText}
+											onChange={(e) => setEditText(e.target.value)}
+											onBlur={() => saveEdit(msg.id)}
+											onKeyDown={(e) =>
+												e.key === "Enter" && saveEdit(msg.id)
+											}
+											className="input-message"
+										/>
+									) : (
+										<p className="text-sm">{msg.text}</p>
+									)}
+
+									<p className="text-[10px] text-right mt-1 text-time">
+										{formatTime(msg.createdAt)}
+									</p>
+
+									{isMe && (
+										<div className="msg-actions">
+											<button onClick={() => editMessage(msg)}>✏️</button>
+											<button onClick={() => deleteMessage(msg.id)}>🗑️</button>
+										</div>
+									)}
+								</div>
+							</div>
+						</div>
+					);
+				})}
+			</div>
+
+			{/* INPUT */}
+			<form
+				onSubmit={sendMessage}
+				className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-4xl div-wht shadow-sm rounded-full px-4 py-3 flex items-center gap-3"
+			>
+				<input
+					value={text}
+					onChange={(e) => setText(e.target.value)}
+					placeholder="Escribe un mensaje..."
+					className="input-message flex-1"
+				/>
+				<button
+					type="submit"
+					className="bg-[var(--accent)] text-white w-10 h-10 rounded-full flex items-center justify-center"
+				>
+					➤
+				</button>
+			</form>
+
+			{/* BOTÓN SCROLL */}
+			{!isAtBottom && (
+				<button
+					onClick={() => {
+						messagesRef.current.scrollTop =
+							messagesRef.current.scrollHeight;
+						setIsAtBottom(true);
+					}}
+					className="btn-scroll-bottom"
+				>
+					↓
+				</button>
+			)}
+		</div>
+	);
 }

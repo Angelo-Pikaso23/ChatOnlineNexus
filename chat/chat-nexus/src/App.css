@@ -86,7 +86,7 @@ body {
   color: var(--text-primary);
   border-radius: 1rem 1rem 1rem 0;
   padding: 0.75rem 1rem;
-  max-width: 70%;
+  /* max-width: 70%; */
   word-break: break-word;
 }
 
@@ -123,12 +123,12 @@ body {
   overflow: hidden;
 }
 
-/* Mostrar al hover */
 .div-msg:hover .msg-actions,
 .div-msg-sender:hover .msg-actions {
   opacity: 1;
   pointer-events: auto;
 }
+
 
 .msg-actions button {
   width: 28px;
@@ -235,6 +235,7 @@ body {
 .text-time {
   color: var(--text-time);
   font-size: 0.75rem;
+
 }
 /* ============================== BOTONES ============================== */
 .btn-light {
@@ -552,3 +553,79 @@ body,
   height: 100%;
   overflow: hidden;
 }
+/* ================= FILA DE MENSAJE ================= */
+.message-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  max-width: 100%;
+}
+
+/* Mensajes propios a la derecha */
+.row-me {
+  justify-content: flex-end;
+}
+
+/* Mensajes recibidos a la izquierda */
+.row-other {
+  justify-content: flex-start;
+}
+
+/* ================= MENÚ FUERA DEL MENSAJE ================= */
+.msg-menu-wrapper {
+  position: relative;
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+/* Botón ⋮ */
+.msg-menu-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 2px;
+}
+
+.msg-menu-btn:hover {
+  color: var(--accent-light);
+}
+
+/* Dropdown */
+.msg-menu {
+  position: absolute;
+  top: 20px;
+  right: 0;
+  min-width: 140px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--hover-light);
+  border-radius: 0.75rem;
+  padding: 0.25rem;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+  z-index: 50;
+  animation: fadeScale 0.15s ease;
+}
+
+/* Quitar cualquier scroll lateral */
+.div-conv {
+  overflow-x: hidden;
+}
+.text-time {
+  white-space: nowrap;
+  word-break: keep-all;
+  line-height: 1;
+  font-size: 0.7rem;
+  opacity: 0.8;
+  margin-top: 0.25rem;
+}
+/* Hora en mensajes enviados */
+.div-msg-sender .text-time {
+  text-align: right;
+}
+
+/* Hora en mensajes recibidos */
+.div-msg .text-time {
+  text-align: left;
+}
+

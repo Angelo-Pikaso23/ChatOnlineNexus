@@ -53,6 +53,7 @@ export default function Chat({ selectedUser, onCloseChat }) {
 	const [editingId, setEditingId] = useState(null);
 	const [editText, setEditText] = useState("");
 	const [blockedUsers, setBlockedUsers] = useState([]);
+	const [openMenuId, setOpenMenuId] = useState(null);
 
 	const messagesRef = useRef(null);
 
@@ -270,32 +271,47 @@ export default function Chat({ selectedUser, onCloseChat }) {
 							)}
 
 							<div className={isMe ? "align-end" : "align-start"}>
-								<div className={isMe ? "div-msg-sender" : "div-msg"}>
-									{editingId === msg.id ? (
-										<input
-											value={editText}
-											onChange={(e) => setEditText(e.target.value)}
-											onBlur={() => saveEdit(msg.id)}
-											onKeyDown={(e) =>
-												e.key === "Enter" && saveEdit(msg.id)
-											}
-											className="input-message"
-										/>
-									) : (
-										<p className="text-sm">{msg.text}</p>
-									)}
+								<div className={`message-row ${isMe ? "row-me" : "row-other .text-time2"}`}>
+									<div className={isMe ? "div-msg-sender" : "div-msg"}>
+										{editingId === msg.id ? (
+											<input
+												value={editText}
+												onChange={(e) => setEditText(e.target.value)}
+												onBlur={() => saveEdit(msg.id)}
+												onKeyDown={(e) => e.key === "Enter" && saveEdit(msg.id)}
+												className="input-message"
+											/>
+										) : (
+											<p className="text-sm">{msg.text}</p>
+										)}
 
-									<p className="text-[10px] text-right mt-1 text-time">
-										{formatTime(msg.createdAt)}
-									</p>
+										<p className="text-[10px] text-time text-right mt-1">
+											{formatTime(msg.createdAt)}
+										</p>
+									</div>
 
 									{isMe && (
-										<div className="msg-actions">
-											<button onClick={() => editMessage(msg)}>✏️</button>
-											<button onClick={() => deleteMessage(msg.id)}>🗑️</button>
+										<div className="msg-menu-wrapper">
+											<button
+												className="msg-menu-btn"
+												onClick={(e) => {
+													e.stopPropagation();
+													setOpenMenuId(openMenuId === msg.id ? null : msg.id);
+												}}
+											>
+												⋮
+											</button>
+
+											{openMenuId === msg.id && (
+												<div className="msg-menu">
+													<button onClick={() => editMessage(msg)}>✏️ Editar</button>
+													<button onClick={() => deleteMessage(msg.id)}>🗑️ Eliminar</button>
+												</div>
+											)}
 										</div>
 									)}
 								</div>
+
 							</div>
 						</div>
 					);

@@ -4,19 +4,18 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCCK0YrFd9Jolmqn4WOjNH6fONl4pVbQSQ",
-  authDomain: "nexus-porfolio.firebaseapp.com",
-  projectId: "nexus-porfolio",
-  storageBucket: "nexus-porfolio.firebasestorage.com",
-  messagingSenderId: "133196318050",
-  appId: "1:133196318050:web:a35088680edc062d16583b",
-  measurementId: "G-2CHJ7SX7RB"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
-
 
 const app = initializeApp(firebaseConfig);
 
-// 👇 EXPORTACIONES CORRECTAS
+// 🔥 EXPORTACIONES
 export const auth = getAuth(app);
 export const provider = new GoogleAuthProvider();
 export const db = getFirestore(app);
